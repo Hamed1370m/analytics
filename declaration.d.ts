@@ -265,13 +265,18 @@ export interface WebApp {
 
 export interface Telegram {
     WebApp: WebApp;
+    //TODO type for WebView
     WebView: any;
 }
 
 declare global {
     interface Window {
         Telegram: Telegram,
+        //TODO better types for proxies
         TelegramGameProxy: any,
+        TelegramWebviewProxy: {
+          postEvent: (eventType, eventData) => void,
+        },
         TelegramGameProxy_receiveEvent: (eventType: string, eventData: unknown) => void,
         telegramAnalytics: {
             init: ({ token, appName }: {
