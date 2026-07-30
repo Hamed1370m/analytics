@@ -36,20 +36,18 @@ export class WebViewObserver {
         const observer = this;
 
         if (listener?.receiveEvent) {
+            const originalReceiveEvent = listener.receiveEvent.bind(listener);
             listener.receiveEvent = (eventType: string, eventData: unknown) => {
                 observer.handleEvents(eventType, eventData as Record<string, any>);
 
-                window.Telegram.WebView.callEventCallbacks(eventType, function(callback) {
-                    callback(eventType, eventData);
-                });
+                originalReceiveEvent(eventType, eventData);
             }
         } else {
+            const originalTelegramGameProxyReceiveEvent = window.TelegramGameProxy_receiveEvent;
             window.TelegramGameProxy_receiveEvent = (eventType: string, eventData: unknown) => {
                 observer.handleEvents(eventType, eventData as Record<string, any>);
 
-                window.Telegram.WebView.callEventCallbacks(eventType, function(callback) {
-                    callback(eventType, eventData);
-                });
+                originalTelegramGameProxyReceiveEvent(eventType, eventData);
             }
         }
     }
@@ -94,7 +92,7 @@ export class WebViewObserver {
             window.TelegramWebviewProxy.postEvent(eventType, JSON.stringify(eventData));
             callback();
         }
-        else if (window.external && 'notify' in window.external) {
+        else if (window.external && 'notify' in window.external && typeof window.external.notify === 'function') {
             window.external.notify(JSON.stringify({eventType: eventType, eventData: eventData}));
             callback();
         }
